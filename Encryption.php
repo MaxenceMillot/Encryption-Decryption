@@ -13,12 +13,7 @@ class Encryption
 
     function __construct()
     {
-        //auth
-        //generate key (with setToken)
-        //encrypt pass
-        //generate iv = store in a session
-
-        //reset key timeout(in checkcookie?)
+        
     }
 
     function encrypt($pass) {
