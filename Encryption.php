@@ -16,7 +16,7 @@ class Encryption
         
     }
 
-    function encrypt($pass) {
+    function encrypt($data) {
 
         // hash
         $key = hash('sha256', $this->secret_key);
@@ -26,16 +26,16 @@ class Encryption
 
         $_SESSION["iv"] = $iv; // Initialisation vector in session var (server side)
 
-        $output = openssl_encrypt($pass, ENCRYPT_METHOD, $key, 0, $iv);
+        $output = openssl_encrypt($data, ENCRYPT_METHOD, $key, 0, $iv);
         $output = base64_encode($output);
 
         return $output;
     }
 
-    function decrypt($pass){
+    function decrypt($data){
         // hash key
         $key = hash('sha256', $_COOKIE['key']);
-        $output = openssl_decrypt(base64_decode($pass), ENCRYPT_METHOD, $key, 0, $_SESSION['iv']);
+        $output = openssl_decrypt(base64_decode($data), ENCRYPT_METHOD, $key, 0, $_SESSION['iv']);
         return $output;
     }
 
