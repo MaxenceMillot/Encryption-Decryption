@@ -9,52 +9,50 @@
 class Encryption
 {
 
-    private $secret_key;
+    private $secret_key = 'Kersia123Go';
 
     function __construct()
     {
-        
+        //auth
+        //generate key (with setToken)
+        //encrypt pass
+        //generate iv = store in a session
+
+        //reset key timeout(in checkcookie?)
     }
 
-    function encrypt($data) {
-
+    function encrypt($pass, $iv) {
         // hash
         $key = hash('sha256', $this->secret_key);
-
         // iv - encrypt method AES-256-CBC expects 16 bytes - else you will get a warning
-        $iv = substr(hash('sha256', $this->generateIv()), 0, 16);
-
-        $_SESSION["iv"] = $iv; // Initialisation vector in session var (server side)
-
-        $output = openssl_encrypt($data, ENCRYPT_METHOD, $key, 0, $iv);
+        $strongIv = substr(hash('sha256', $iv), 0, 16);
+        $output = openssl_encrypt($pass, ENCRYPT_METHOD, $key, 0, $strongIv);
         $output = base64_encode($output);
 
         return $output;
     }
 
-    function decrypt($data){
+    function decrypt($pass, $iv){
         // hash key
-        $key = hash('sha256', $_COOKIE['key']);
-        $output = openssl_decrypt(base64_decode($data), ENCRYPT_METHOD, $key, 0, $_SESSION['iv']);
+        $key = hash('sha256', $this->secret_key);
+        // iv - encrypt method AES-256-CBC expects 16 bytes - else you will get a warning
+        $strongIv = substr(hash('sha256', $iv), 0, 16);
+        $output = openssl_decrypt(base64_decode($pass), ENCRYPT_METHOD, $key, 0, $strongIv);
         return $output;
     }
 
-    function generateKey(){
-        $this->secret_key = openssl_random_pseudo_bytes(8);
-        if(setcookie("key",$this->secret_key,time()+60*20)){  // 20 minutes
-            return true;
+    function generateIv(){
+        $json = file_get_contents(ROOT_DIR."/config/data/enc-salt.json");
+        if(!$json){
+            writeErrorLog("could not read enc-salt.json");
         }
-        return false;
-    }
-    function resetKeyTimeout(){
-        if(setcookie("key",$_COOKIE['key'],time()+60*20)){  // 20 minutes
-            return true;
-        }
-        return false;
-    }
+        $oCred = json_decode($json);
 
-    private function generateIv(){
-        $secret_iv = openssl_random_pseudo_bytes(16);
-        return $secret_iv;
+        if (empty($oCred) or !isset($oCred->salt)){
+            writeErrorLog("Error: data.json file lacks credentials or JSON string can't be decoded.");
+        }
+
+        $salt = $oCred->salt;
+        return  hash('sha256', $salt, true);
     }
 }
