@@ -9,7 +9,7 @@
 class Encryption
 {
 
-    private $secret_key = 'Kersia123Go';
+    private $secret_key = 'Secret123Go';
 
     function __construct()
     {
